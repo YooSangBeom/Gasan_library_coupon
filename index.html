@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>화이트펜슬 가산점 · 도서관 휴관일 혜택</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f2f0ea;--card:#fff;--ink:#18180f;--ink2:#4a4a3f;--ink3:#9a9a8e;
+  --green:#1e4a2a;--green-mid:#2d6b3e;--green-light:#e6f0e9;
+  --gold:#b8892a;--gold-light:#faf3e0;
+  --red:#c0392b;--red-light:#fdecea;
+  --amber:#b45309;--amber-light:#fff8e1;
+  --r:18px;
+}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--ink);
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:36px 16px 80px}
+.top-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.22em;
+  color:var(--ink3);text-transform:uppercase;margin-bottom:10px;text-align:center}
+h1{font-size:clamp(24px,6vw,32px);font-weight:900;text-align:center;line-height:1.2;color:var(--ink);margin-bottom:6px}
+h1 .hl{color:var(--green-mid)}
+.sub-desc{font-size:13px;color:var(--ink2);text-align:center;line-height:1.7;margin-bottom:24px}
+.badge{display:inline-flex;align-items:center;gap:7px;padding:7px 18px;
+  border-radius:99px;font-size:12px;font-weight:500;margin-bottom:24px}
+.badge.closed{background:var(--green);color:#a8d8b4}
+.badge.open{background:#2a2a1e;color:#c8c09a}
+.badge.loading{background:#e8e6e0;color:var(--ink3)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.card{background:var(--card);border-radius:var(--r);padding:22px 20px;
+  width:100%;max-width:400px;margin-bottom:12px;box-shadow:0 1px 16px rgba(0,0,0,.06)}
+.card-label{font-size:10px;font-weight:500;letter-spacing:.14em;color:var(--ink3);text-transform:uppercase;margin-bottom:12px}
+.month-title{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:10px}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:11px;font-weight:500;padding:4px 11px;border-radius:99px;font-family:'DM Mono',monospace}
+.chip.reg{background:#fdecea;color:#a93226}
+.chip.hol{background:var(--green-light);color:var(--green)}
+.chip.today-mark{outline:2px solid currentColor;outline-offset:2px;font-weight:700}
+.coupon-wrap{position:relative;width:100%;max-width:400px}
+.lock-overlay{position:absolute;inset:0;background:rgba(242,240,234,.88);border-radius:var(--r);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;z-index:10;backdrop-filter:blur(3px)}
+.lock-icon-big{font-size:30px}
+.lock-msg{font-size:13px;color:var(--ink2);text-align:center;line-height:1.7}
+.price-row{display:flex;align-items:baseline;gap:10px;margin-bottom:4px}
+.price-ori{font-size:13px;color:var(--ink3);text-decoration:line-through;font-family:'DM Mono',monospace}
+.price-sale{font-size:26px;font-weight:900;color:var(--green-mid);font-family:'DM Mono',monospace}
+.price-badge{font-size:11px;font-weight:700;background:var(--gold-light);color:var(--gold);padding:3px 9px;border-radius:6px}
+.product-name{font-size:13px;color:var(--ink2);margin-bottom:16px}
+.divider{height:1px;background:#ece9e2;margin:14px 0}
+.field-label{font-size:12px;font-weight:500;color:var(--ink2);margin-bottom:7px;display:block}
+.phone-input{width:100%;height:50px;border:1.5px solid #dedad2;border-radius:12px;padding:0 16px;
+  font-size:19px;font-family:'DM Mono',monospace;letter-spacing:.06em;color:var(--ink);
+  background:var(--bg);outline:none;transition:border-color .2s,background .2s;margin-bottom:12px}
+.phone-input:focus{border-color:var(--green-mid);background:#fff}
+.phone-input::placeholder{color:var(--ink3);font-size:14px;letter-spacing:0;font-family:'Noto Sans KR',sans-serif}
+.submit-btn{width:100%;height:52px;background:var(--green);color:#fff;border:none;border-radius:12px;
+  font-size:15px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;transition:background .18s,transform .1s}
+.submit-btn:hover{background:var(--green-mid)}
+.submit-btn:active{transform:scale(.98)}
+.submit-btn:disabled{background:#b0c4b8;cursor:not-allowed;transform:none}
+.hint{font-size:11px;color:var(--ink3);text-align:center;line-height:1.7;margin-top:10px}
+.spinner{width:17px;height:17px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;
+  border-radius:50%;animation:spin .65s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.result-box{display:none;margin-top:14px;padding:16px 18px;border-radius:12px;
+  font-size:13px;font-weight:500;line-height:1.75;white-space:pre-line;border:1px solid transparent}
+.result-box.ok{background:var(--green-light);color:var(--green);border-color:#b8d8c0}
+.result-box.dup{background:var(--amber-light);color:var(--amber);border-color:#fde68a}
+.result-box.err{background:var(--red-light);color:var(--red);border-color:#f5c6c4}
+.result-box.locked{background:#f0ede4;color:var(--ink2);border-color:#dedad2}
+.notice{font-size:11px;color:var(--ink3);text-align:center;line-height:1.8;max-width:360px;margin-top:4px}
+</style>
+</head>
+<body>
+
+<p class="top-label">Whitepencil · 가산점</p>
+<h1>도서관 <span class="hl">휴관일</span><br>특별 할인</h1>
+<p class="sub-desc">금천구립 가산도서관 휴관일에만<br>당일권 10시간을 특가로 이용하세요</p>
+
+<div id="badge" class="badge loading">
+  <span class="dot"></span>
+  <span id="badgeText">확인 중...</span>
+</div>
+
+<div class="card">
+  <div class="card-label">이번 달 휴관일</div>
+  <div id="monthTitle" class="month-title">─</div>
+  <div id="chipRow" class="chip-row"><span style="font-size:12px;color:#9a9a8e">불러오는 중...</span></div>
+</div>
+
+<div class="coupon-wrap">
+  <div class="card" style="margin-bottom:0">
+    <div id="lockOverlay" class="lock-overlay">
+      <span class="lock-icon-big">🔒</span>
+      <p class="lock-msg">오늘은 도서관 운영일입니다.<br>다음 휴관일에 다시 방문해 주세요.</p>
+    </div>
+    <div class="card-label">휴관일 할인 쿠폰</div>
+    <div class="price-row">
+      <span class="price-ori">15,000원</span>
+      <span class="price-sale">5,000원</span>
+      <span class="price-badge">만원 할인</span>
+    </div>
+    <p class="product-name">당일권 10시간 · 발급 즉시 사용 가능</p>
+    <div class="divider"></div>
+    <label class="field-label" for="phoneInput">휴대폰 번호</label>
+    <input id="phoneInput" class="phone-input" type="tel"
+           placeholder="010-0000-0000" maxlength="13" inputmode="numeric">
+    <button id="submitBtn" class="submit-btn" onclick="issueCoupon()">
+      할인 쿠폰 받기
+    </button>
+    <p class="hint">5분 내 자동 발급 · 보유 중 쿠폰 사용 후 재신청 가능</p>
+    <div id="resultBox" class="result-box"></div>
+  </div>
+</div>
+
+<p class="notice" style="margin-top:16px">
+  화이트펜슬 가산점 회원에 한해 발급됩니다.<br>
+  발급된 쿠폰은 취소되지 않습니다.
+</p>
+
+<script>
+// ★ 앱스크립트 웹앱 URL — 배포 후 입력
+const GAS_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+
+// 전화번호 자동 하이픈
+document.getElementById('phoneInput').addEventListener('input', function () {
+  let v = this.value.replace(/\D/g,'').slice(0,11);
+  if (v.length<=3)      this.value=v;
+  else if (v.length<=7) this.value=v.slice(0,3)+'-'+v.slice(3);
+  else                  this.value=v.slice(0,3)+'-'+v.slice(3,7)+'-'+v.slice(7);
+});
+document.getElementById('phoneInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter') issueCoupon();
+});
+
+// ── 페이지 로드: GAS에서 휴관일 상태 받아와 렌더링 ──────
+// 휴관일 판단은 GAS(library_holidays.gs)에서 처리
+async function initPage() {
+  try {
+    const res    = await fetch(GAS_URL + '?action=status');
+    const status = await res.json();
+    const today  = status.today;
+    const [y, m] = today.split('-').map(Number);
+
+    // 배지
+    const badge = document.getElementById('badge');
+    if (status.is_closed) {
+      badge.className = 'badge closed';
+      document.getElementById('badgeText').textContent = '오늘 휴관일 — 쿠폰 발급 가능';
+      document.getElementById('lockOverlay').style.display = 'none';
+    } else {
+      badge.className = 'badge open';
+      document.getElementById('badgeText').textContent = '오늘 정상운영 중';
+    }
+
+    // 이번 달 휴관일 칩
+    document.getElementById('monthTitle').textContent = `${y}년 ${m}월`;
+    const row = document.getElementById('chipRow');
+    if (!status.closed_days || status.closed_days.length === 0) {
+      row.innerHTML = '<span style="font-size:12px;color:#9a9a8e">이번 달 휴관일 없음</span>';
+    } else {
+      row.innerHTML = status.closed_days.map(d => {
+        const isToday = d.date === today;
+        const cls = (d.reason.includes('정기') ? 'reg' : 'hol') + (isToday ? ' today-mark' : '');
+        return `<span class="chip ${cls}" title="${d.reason}">${d.label}${isToday ? ' ★' : ''}</span>`;
+      }).join('');
+    }
+  } catch(e) {
+    document.getElementById('badge').className = 'badge loading';
+    document.getElementById('badgeText').textContent = '상태 확인 실패';
+  }
+}
+
+// ── 쿠폰 발급 → GAS POST ────────────────────────────────
+async function issueCoupon() {
+  const raw = document.getElementById('phoneInput').value.replace(/\D/g,'');
+  const btn = document.getElementById('submitBtn');
+
+  if (raw.length < 10 || raw.length > 11) {
+    showResult('err', '❌ 올바른 휴대폰 번호를 입력해 주세요.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> 발급 처리 중...';
+  document.getElementById('resultBox').style.display = 'none';
+
+  try {
+    const res  = await fetch(GAS_URL, {
+      method:  'POST',
+      headers: {'Content-Type': 'text/plain'},
+      body:    JSON.stringify({ action: 'issue', phone: raw }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showResult('ok',
+        '✅ 쿠폰이 발급되었습니다!\n'+
+        '당일권 10시간  15,000원 → 5,000원\n'+
+        '화이트펜슬 앱 → 쿠폰함에서 확인하세요.');
+    } else if (data.duplicate) {
+      showResult('dup',
+        '⚠️ 보유 중인 쿠폰이 있습니다.\n'+
+        '현재 쿠폰을 먼저 사용하신 후\n'+
+        '다시 신청하시면 추가 발급됩니다.');
+    } else if (data.not_closed) {
+      showResult('locked',
+        '🔒 오늘은 도서관 운영일입니다.\n'+
+        '다음 휴관일에 다시 방문해 주세요.');
+    } else {
+      showResult('err', '❌ 발급 중 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요.');
+    }
+  } catch(e) {
+    showResult('err', '❌ 서버에 연결할 수 없습니다.\n잠시 후 다시 시도해 주세요.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '할인 쿠폰 받기';
+  }
+}
+
+function showResult(type, msg) {
+  const el = document.getElementById('resultBox');
+  el.className     = 'result-box ' + type;
+  el.style.display = 'block';
+  el.textContent   = msg;
+  el.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+initPage();
+</script>
+</body>
+</html>
