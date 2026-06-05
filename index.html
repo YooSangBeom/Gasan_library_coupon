@@ -53,7 +53,10 @@ h1 .hl{color:var(--green-mid)}
 @media(max-width:600px){.branches{grid-template-columns:1fr}}
 
 .branch-card{background:var(--card);border-radius:var(--r);padding:22px 20px;
-  box-shadow:0 1px 16px rgba(0,0,0,.06);position:relative}
+  box-shadow:0 1px 16px rgba(0,0,0,.06)}
+
+/* 쿠폰 발급 영역만 잠금 */
+.coupon-zone{position:relative;margin-top:4px}
 
 /* 지점 헤더 */
 .branch-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
@@ -72,7 +75,7 @@ h1 .hl{color:var(--green-mid)}
 .divider{height:1px;background:#ece9e2;margin:12px 0}
 
 /* 잠금 오버레이 */
-.lock-overlay{position:absolute;inset:0;background:rgba(242,240,234,.9);border-radius:var(--r);
+.lock-overlay{position:absolute;inset:0;background:rgba(242,240,234,.92);border-radius:12px;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:6px;z-index:10;backdrop-filter:blur(3px)}
 .lock-icon-big{font-size:26px}
@@ -159,10 +162,6 @@ h1 .hl{color:var(--green-mid)}
 
   <!-- 가산점 -->
   <div class="branch-card">
-    <div id="lockGasan" class="lock-overlay">
-      <span class="lock-icon-big">🔒</span>
-      <p class="lock-msg">오늘은 운영일입니다.<br>다음 휴관일에 방문해 주세요.</p>
-    </div>
     <div class="branch-header">
       <span class="branch-dot gasan"></span>
       <span class="branch-name">가산점</span>
@@ -171,23 +170,31 @@ h1 .hl{color:var(--green-mid)}
         지도
       </a>
     </div>
-    <div class="card-label">휴관일 할인 쿠폰</div>
-    <div class="price-row">
-      <span class="price-ori">15,000원</span>
-      <span class="price-sale">5,000원</span>
-      <span class="price-badge">만원 할인</span>
+    <!-- 쿠폰 발급 영역만 잠금 -->
+    <div class="coupon-zone">
+      <div id="lockGasan" class="lock-overlay">
+        <span class="lock-icon-big">🔒</span>
+        <p class="lock-msg">오늘은 운영일입니다.<br>다음 휴관일에 방문해 주세요.</p>
+      </div>
+      <div class="card-label">휴관일 할인 쿠폰</div>
+      <div class="price-row">
+        <span class="price-ori">15,000원</span>
+        <span class="price-sale">5,000원</span>
+        <span class="price-badge">만원 할인</span>
+      </div>
+      <p class="product-name">당일권 10시간 · 발급 즉시 사용 가능</p>
+      <div class="divider"></div>
+      <label class="field-label" for="phoneGasan">휴대폰 번호</label>
+      <input id="phoneGasan" class="phone-input" type="tel"
+             placeholder="010-0000-0000" maxlength="13" inputmode="numeric"
+             oninput="formatPhone(this)" onkeydown="if(event.key==='Enter') issue('가산점')">
+      <button id="btnGasan" class="submit-btn gasan" onclick="issue('가산점')">
+        가산점 쿠폰 받기
+      </button>
+      <p class="hint">5분 내 자동 발급 · 보유 쿠폰 사용 후 재신청 가능</p>
+      <div id="resultGasan" class="result-box"></div>
     </div>
-    <p class="product-name">당일권 10시간 · 발급 즉시 사용 가능</p>
-    <div class="divider"></div>
-    <label class="field-label" for="phoneGasan">휴대폰 번호</label>
-    <input id="phoneGasan" class="phone-input" type="tel"
-           placeholder="010-0000-0000" maxlength="13" inputmode="numeric"
-           oninput="formatPhone(this)" onkeydown="if(event.key==='Enter') issue('가산점')">
-    <button id="btnGasan" class="submit-btn gasan" onclick="issue('가산점')">
-      가산점 쿠폰 받기
-    </button>
-    <p class="hint">5분 내 자동 발급 · 보유 쿠폰 사용 후 재신청 가능</p>
-    <div id="resultGasan" class="result-box"></div>
+    <!-- 리뷰 영역 — 항상 표시 -->
     <div class="review-action">
       <a href="https://naver.me/F74KNy1k" target="_blank" class="review-btn naver">
         ⭐ 네이버 리뷰 남기기
@@ -200,10 +207,6 @@ h1 .hl{color:var(--green-mid)}
 
   <!-- 금천점 -->
   <div class="branch-card">
-    <div id="lockGeumcheon" class="lock-overlay">
-      <span class="lock-icon-big">🔒</span>
-      <p class="lock-msg">오늘은 운영일입니다.<br>다음 휴관일에 방문해 주세요.</p>
-    </div>
     <div class="branch-header">
       <span class="branch-dot geumcheon"></span>
       <span class="branch-name">금천점</span>
@@ -212,23 +215,31 @@ h1 .hl{color:var(--green-mid)}
         지도
       </a>
     </div>
-    <div class="card-label">휴관일 할인 쿠폰</div>
-    <div class="price-row">
-      <span class="price-ori">15,000원</span>
-      <span class="price-sale">5,000원</span>
-      <span class="price-badge">만원 할인</span>
+    <!-- 쿠폰 발급 영역만 잠금 -->
+    <div class="coupon-zone">
+      <div id="lockGeumcheon" class="lock-overlay">
+        <span class="lock-icon-big">🔒</span>
+        <p class="lock-msg">오늘은 운영일입니다.<br>다음 휴관일에 방문해 주세요.</p>
+      </div>
+      <div class="card-label">휴관일 할인 쿠폰</div>
+      <div class="price-row">
+        <span class="price-ori">15,000원</span>
+        <span class="price-sale">5,000원</span>
+        <span class="price-badge">만원 할인</span>
+      </div>
+      <p class="product-name">당일권 10시간 · 발급 즉시 사용 가능</p>
+      <div class="divider"></div>
+      <label class="field-label" for="phoneGeumcheon">휴대폰 번호</label>
+      <input id="phoneGeumcheon" class="phone-input" type="tel"
+             placeholder="010-0000-0000" maxlength="13" inputmode="numeric"
+             oninput="formatPhone(this)" onkeydown="if(event.key==='Enter') issue('금천점')">
+      <button id="btnGeumcheon" class="submit-btn geumcheon" onclick="issue('금천점')">
+        금천점 쿠폰 받기
+      </button>
+      <p class="hint">5분 내 자동 발급 · 보유 쿠폰 사용 후 재신청 가능</p>
+      <div id="resultGeumcheon" class="result-box"></div>
     </div>
-    <p class="product-name">당일권 10시간 · 발급 즉시 사용 가능</p>
-    <div class="divider"></div>
-    <label class="field-label" for="phoneGeumcheon">휴대폰 번호</label>
-    <input id="phoneGeumcheon" class="phone-input" type="tel"
-           placeholder="010-0000-0000" maxlength="13" inputmode="numeric"
-           oninput="formatPhone(this)" onkeydown="if(event.key==='Enter') issue('금천점')">
-    <button id="btnGeumcheon" class="submit-btn geumcheon" onclick="issue('금천점')">
-      금천점 쿠폰 받기
-    </button>
-    <p class="hint">5분 내 자동 발급 · 보유 쿠폰 사용 후 재신청 가능</p>
-    <div id="resultGeumcheon" class="result-box"></div>
+    <!-- 리뷰 영역 — 항상 표시 -->
     <div class="review-action">
       <a href="https://naver.me/5apTp05l" target="_blank" class="review-btn naver">
         ⭐ 네이버 리뷰 남기기
