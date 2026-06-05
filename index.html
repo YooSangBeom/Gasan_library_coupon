@@ -315,7 +315,7 @@ async function issue(branch) {
     const res  = await fetch(GAS_URL, {
       method:  'POST',
       headers: {'Content-Type': 'text/plain'},
-      body:    JSON.stringify({ action: 'issue', phone: raw, branch }),
+      body:    JSON.stringify({ action: 'issue', phone: raw, branch, test: true }),
     });
     const data = await res.json();
 
@@ -354,6 +354,8 @@ function showResult(id, type, msg) {
 }
 
 initPage();
+document.getElementById('badge').className='badge closed';
+document.getElementById('badgeText').textContent='[테스트] 휴관일 강제 활성화';
 </script>
 </body>
 </html>
