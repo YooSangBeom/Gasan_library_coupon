@@ -55,8 +55,8 @@ h1 .hl{color:var(--green-mid)}
 .branch-card{background:var(--card);border-radius:var(--r);padding:22px 20px;
   box-shadow:0 1px 16px rgba(0,0,0,.06)}
 
-/* 쿠폰 발급 영역만 잠금 */
-.coupon-zone{position:relative;margin-top:4px}
+/* 쿠폰 발급 영역 */
+.coupon-zone{margin-top:4px}
 
 /* 지점 헤더 */
 .branch-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
@@ -75,12 +75,6 @@ h1 .hl{color:var(--green-mid)}
 .divider{height:1px;background:#ece9e2;margin:12px 0}
 
 /* 잠금 오버레이 */
-.lock-overlay{position:absolute;inset:0;background:rgba(242,240,234,.92);border-radius:12px;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:6px;z-index:10;backdrop-filter:blur(3px)}
-.lock-icon-big{font-size:26px}
-.lock-msg{font-size:12px;color:var(--ink2);text-align:center;line-height:1.7}
-
 /* 입력 */
 .field-label{font-size:12px;font-weight:500;color:var(--ink2);margin-bottom:6px;display:block}
 .phone-input{width:100%;height:46px;border:1.5px solid #dedad2;border-radius:12px;padding:0 14px;
@@ -172,10 +166,7 @@ h1 .hl{color:var(--green-mid)}
     </div>
     <!-- 쿠폰 발급 영역만 잠금 -->
     <div class="coupon-zone">
-      <div id="lockGasan" class="lock-overlay">
-        <span class="lock-icon-big">🔒</span>
-        <p class="lock-msg">오늘은 운영일입니다.<br>다음 휴관일에 방문해 주세요.</p>
-      </div>
+
       <div class="card-label">휴관일 할인 쿠폰</div>
       <div class="price-row">
         <span class="price-ori">15,000원</span>
@@ -217,10 +208,7 @@ h1 .hl{color:var(--green-mid)}
     </div>
     <!-- 쿠폰 발급 영역만 잠금 -->
     <div class="coupon-zone">
-      <div id="lockGeumcheon" class="lock-overlay">
-        <span class="lock-icon-big">🔒</span>
-        <p class="lock-msg">오늘은 운영일입니다.<br>다음 휴관일에 방문해 주세요.</p>
-      </div>
+
       <div class="card-label">휴관일 할인 쿠폰</div>
       <div class="price-row">
         <span class="price-ori">15,000원</span>
@@ -269,8 +257,8 @@ function formatPhone(el) {
 
 // 지점별 설정
 const BRANCH_CONFIG = {
-  '가산점':  { phoneId:'phoneGasan',     btnId:'btnGasan',     resultId:'resultGasan',     lockId:'lockGasan' },
-  '금천점':  { phoneId:'phoneGeumcheon', btnId:'btnGeumcheon', resultId:'resultGeumcheon', lockId:'lockGeumcheon' },
+  '가산점':  { phoneId:'phoneGasan',     btnId:'btnGasan',     resultId:'resultGasan'     },
+  '금천점':  { phoneId:'phoneGeumcheon', btnId:'btnGeumcheon', resultId:'resultGeumcheon' },
 };
 
 // 페이지 로드 — GAS에서 휴관일 상태 받아오기
@@ -285,9 +273,6 @@ async function initPage() {
     if (status.is_closed) {
       badge.className = 'badge closed';
       document.getElementById('badgeText').textContent = '오늘 휴관일 — 쿠폰 발급 가능';
-      // 두 지점 모두 잠금 해제
-      document.getElementById('lockGasan').style.display     = 'none';
-      document.getElementById('lockGeumcheon').style.display = 'none';
     } else {
       badge.className = 'badge open';
       document.getElementById('badgeText').textContent = '오늘 정상운영 중';
