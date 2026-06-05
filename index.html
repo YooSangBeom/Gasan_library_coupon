@@ -322,8 +322,9 @@ async function issue(branch) {
     if (data.success) {
       showResult(cfg.resultId, 'ok',
         '✅ 쿠폰이 발급되었습니다!\n'+
-        '당일권 10시간  15,000원 → 5,000원\n'+
-        '화이트펜슬 앱 → 쿠폰함에서 확인하세요.');
+        '당일권 10시간  15,000원 → 5,000원\n\n'+
+        '📍 키오스크 → 신규 → 당일권 → 10시간\n'+
+        '→ 할인액 확인 후 결제');
     } else if (data.duplicate) {
       showResult(cfg.resultId, 'dup',
         '⚠️ 보유 중인 쿠폰이 있습니다.\n'+
