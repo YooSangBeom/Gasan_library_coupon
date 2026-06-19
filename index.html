@@ -288,16 +288,53 @@ async function initPage() {
   }
 }
 
+// 쿨다운 설정 — 발급 버튼 연타/새로고침 남용 방지
+const COOLDOWN_SECONDS = 60;
+let isRequesting = false; // 진행 중인 요청 잠금 (가장 중요)
+
+function getCooldownKey(branch) {
+  return `wp_cooldown_${branch}`;
+}
+
+function getRemainingCooldown(branch) {
+  try {
+    const last = parseInt(sessionStorage.getItem(getCooldownKey(branch)) || '0', 10);
+    const elapsed = (Date.now() - last) / 1000;
+    return Math.max(0, COOLDOWN_SECONDS - elapsed);
+  } catch(e) {
+    return 0;
+  }
+}
+
+function setCooldown(branch) {
+  try {
+    sessionStorage.setItem(getCooldownKey(branch), String(Date.now()));
+  } catch(e) {}
+}
+
 async function issue(branch) {
   const cfg = BRANCH_CONFIG[branch];
   const raw = document.getElementById(cfg.phoneId).value.replace(/\D/g,'');
   const btn = document.getElementById(cfg.btnId);
+
+  // ① 이미 요청 진행 중이면 무시 (중복 클릭/새로고침 직후 재클릭 방지)
+  if (isRequesting) return;
+
+  // ② 같은 지점 최근 요청 후 쿨다운 중이면 차단
+  const remain = getRemainingCooldown(branch);
+  if (remain > 0) {
+    showResult(cfg.resultId, 'err',
+      `⏳ 잠시 후 다시 시도해 주세요.\n(${Math.ceil(remain)}초 후 재신청 가능)`);
+    return;
+  }
 
   if (raw.length < 10 || raw.length > 11) {
     showResult(cfg.resultId, 'err', '❌ 올바른 휴대폰 번호를 입력해 주세요.');
     return;
   }
 
+  isRequesting = true;
+  setCooldown(branch);
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> 발급 처리 중...';
   document.getElementById(cfg.resultId).style.display = 'none';
@@ -316,6 +353,9 @@ async function issue(branch) {
         '당일권 10시간  15,000원 → 5,000원\n\n'+
         '📍 키오스크 → 신규 → 당일권 → 10시간\n'+
         '→ 할인액 확인 후 결제');
+    } else if (data.cooldown) {
+      showResult(cfg.resultId, 'err',
+        '⏳ 잠시 후 다시 시도해 주세요.\n중복 요청 방지를 위해 일시적으로 제한됩니다.');
     } else if (data.duplicate) {
       showResult(cfg.resultId, 'dup',
         '⚠️ 보유 중인 쿠폰이 있습니다.\n'+
@@ -331,6 +371,7 @@ async function issue(branch) {
   } catch(e) {
     showResult(cfg.resultId, 'err', '❌ 서버에 연결할 수 없습니다.\n잠시 후 다시 시도해 주세요.');
   } finally {
+    isRequesting = false;
     const label = branch === '가산점' ? '가산점 쿠폰 받기' : '금천점 쿠폰 받기';
     btn.disabled = false;
     btn.innerHTML = label;
