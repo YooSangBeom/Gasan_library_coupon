@@ -60,6 +60,25 @@ h1 .hl{color:var(--green-mid)}
 /* 쿠폰 발급 영역 */
 .coupon-zone{margin-top:4px}
 
+/* 평일 월1회 혜택 배너 */
+.monthly-banner{display:flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,#fff8e6,#fef3d4);
+  border:1px solid #f0dca0;border-radius:12px;
+  padding:9px 12px;margin-bottom:14px}
+.monthly-badge{font-size:10px;font-weight:900;color:#fff;background:var(--gold);
+  padding:3px 8px;border-radius:6px;flex-shrink:0;letter-spacing:.02em}
+.monthly-text{font-size:12px;color:#6b5212;flex:1;line-height:1.4}
+.monthly-text strong{color:#8a6a1a;font-weight:800}
+.monthly-btn{font-size:11px;font-weight:700;color:#fff;background:#c89a3c;
+  border:none;border-radius:8px;padding:6px 12px;cursor:pointer;flex-shrink:0;
+  transition:filter .15s}
+.monthly-btn:hover{filter:brightness(1.1)}
+.monthly-form{margin-bottom:14px;padding:12px;background:#fffaf0;
+  border:1px solid #f0dca0;border-radius:12px}
+.monthly-form .phone-input{margin-bottom:8px}
+.submit-btn.monthly-submit{background:#c89a3c}
+.submit-btn.monthly-submit:hover{filter:brightness(1.1)}
+
 /* 지점 헤더 */
 .branch-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
 .branch-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
@@ -164,6 +183,22 @@ h1 .hl{color:var(--green-mid)}
         지도
       </a>
     </div>
+    <!-- 평일 월1회 혜택 배너 — 휴관일엔 JS로 숨김 -->
+    <div id="monthlyBannerGasan" class="monthly-banner">
+      <span class="monthly-badge">월 1회</span>
+      <span class="monthly-text">평일 한정 <strong>5천원 할인</strong> 받기</span>
+      <button class="monthly-btn" onclick="toggleMonthly('가산점')">받기</button>
+    </div>
+    <div id="monthlyFormGasan" class="monthly-form" style="display:none">
+      <input id="phoneGasanMonthly" class="phone-input" type="tel"
+             placeholder="010-0000-0000" maxlength="13" inputmode="numeric"
+             oninput="formatPhone(this)" onkeydown="if(event.key==='Enter') issueMonthly('가산점')">
+      <button id="btnGasanMonthly" class="submit-btn monthly-submit" onclick="issueMonthly('가산점')">
+        평일 할인 쿠폰 받기
+      </button>
+      <div id="resultGasanMonthly" class="result-box"></div>
+    </div>
+
     <div class="coupon-zone">
       <div class="card-label">휴관일 할인 쿠폰</div>
       <div class="price-row">
@@ -203,6 +238,22 @@ h1 .hl{color:var(--green-mid)}
         지도
       </a>
     </div>
+    <!-- 평일 월1회 혜택 배너 — 휴관일엔 JS로 숨김 -->
+    <div id="monthlyBannerGeumcheon" class="monthly-banner">
+      <span class="monthly-badge">월 1회</span>
+      <span class="monthly-text">평일 한정 <strong>5천원 할인</strong> 받기</span>
+      <button class="monthly-btn" onclick="toggleMonthly('금천점')">받기</button>
+    </div>
+    <div id="monthlyFormGeumcheon" class="monthly-form" style="display:none">
+      <input id="phoneGeumcheonMonthly" class="phone-input" type="tel"
+             placeholder="010-0000-0000" maxlength="13" inputmode="numeric"
+             oninput="formatPhone(this)" onkeydown="if(event.key==='Enter') issueMonthly('금천점')">
+      <button id="btnGeumcheonMonthly" class="submit-btn monthly-submit" onclick="issueMonthly('금천점')">
+        평일 할인 쿠폰 받기
+      </button>
+      <div id="resultGeumcheonMonthly" class="result-box"></div>
+    </div>
+
     <div class="coupon-zone">
       <div class="card-label">휴관일 할인 쿠폰</div>
       <div class="price-row">
@@ -255,6 +306,15 @@ const BRANCH_CONFIG = {
   '금천점':  { phoneId:'phoneGeumcheon', btnId:'btnGeumcheon', resultId:'resultGeumcheon' },
 };
 
+const MONTHLY_CONFIG = {
+  '가산점':  { phoneId:'phoneGasanMonthly',     btnId:'btnGasanMonthly',     resultId:'resultGasanMonthly',
+              bannerId:'monthlyBannerGasan',     formId:'monthlyFormGasan'     },
+  '금천점':  { phoneId:'phoneGeumcheonMonthly', btnId:'btnGeumcheonMonthly', resultId:'resultGeumcheonMonthly',
+              bannerId:'monthlyBannerGeumcheon', formId:'monthlyFormGeumcheon' },
+};
+
+let isLibraryClosedToday = false; // initPage에서 갱신
+
 async function initPage() {
   try {
     const res    = await fetch(GAS_URL + '?action=status');
@@ -263,9 +323,15 @@ async function initPage() {
     const [y, m] = today.split('-').map(Number);
 
     const badge = document.getElementById('badge');
+    isLibraryClosedToday = status.is_closed;
     if (status.is_closed) {
       badge.className = 'badge closed';
       document.getElementById('badgeText').textContent = '오늘 휴관일 — 쿠폰 발급 가능';
+      // 휴관일엔 평일 월1회 배너 숨김 (휴관일 쿠폰만 받을 수 있음)
+      Object.values(MONTHLY_CONFIG).forEach(cfg => {
+        document.getElementById(cfg.bannerId).style.display = 'none';
+        document.getElementById(cfg.formId).style.display   = 'none';
+      });
     } else {
       badge.className = 'badge open';
       document.getElementById('badgeText').textContent = '오늘 정상운영 중';
@@ -384,6 +450,104 @@ function showResult(id, type, msg) {
   el.style.display = 'block';
   el.textContent   = msg;
   el.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+// ─────────────────────────────────────────────
+// 평일 월1회 혜택 — 배너 클릭 시 입력 폼 토글
+// ─────────────────────────────────────────────
+function toggleMonthly(branch) {
+  const cfg  = MONTHLY_CONFIG[branch];
+  const form = document.getElementById(cfg.formId);
+  const open = form.style.display === 'none';
+  form.style.display = open ? 'block' : 'none';
+  if (open) {
+    document.getElementById(cfg.phoneId).focus();
+    form.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+}
+
+let isRequestingMonthly = false;
+const MONTHLY_COOLDOWN_SECONDS = 60;
+
+function getMonthlyCooldownKey(branch) {
+  return `wp_cooldown_monthly_${branch}`;
+}
+function getMonthlyRemainingCooldown(branch) {
+  try {
+    const last = parseInt(sessionStorage.getItem(getMonthlyCooldownKey(branch)) || '0', 10);
+    return Math.max(0, MONTHLY_COOLDOWN_SECONDS - (Date.now() - last) / 1000);
+  } catch(e) { return 0; }
+}
+function setMonthlyCooldown(branch) {
+  try { sessionStorage.setItem(getMonthlyCooldownKey(branch), String(Date.now())); } catch(e) {}
+}
+
+async function issueMonthly(branch) {
+  const cfg = MONTHLY_CONFIG[branch];
+  const raw = document.getElementById(cfg.phoneId).value.replace(/\D/g,'');
+  const btn = document.getElementById(cfg.btnId);
+
+  if (isRequestingMonthly) return;
+
+  if (isLibraryClosedToday) {
+    showResult(cfg.resultId, 'err', '🔒 오늘은 휴관일입니다.\n휴관일 할인 쿠폰을 이용해 주세요.');
+    return;
+  }
+
+  const remain = getMonthlyRemainingCooldown(branch);
+  if (remain > 0) {
+    showResult(cfg.resultId, 'err', `⏳ 잠시 후 다시 시도해 주세요.\n(${Math.ceil(remain)}초 후 재신청 가능)`);
+    return;
+  }
+
+  if (raw.length < 10 || raw.length > 11) {
+    showResult(cfg.resultId, 'err', '❌ 올바른 휴대폰 번호를 입력해 주세요.');
+    return;
+  }
+
+  isRequestingMonthly = true;
+  setMonthlyCooldown(branch);
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> 발급 처리 중...';
+  document.getElementById(cfg.resultId).style.display = 'none';
+
+  try {
+    const res  = await fetch(GAS_URL, {
+      method:  'POST',
+      headers: {'Content-Type': 'text/plain'},
+      body:    JSON.stringify({ action: 'issue_monthly', phone: raw, branch }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showResult(cfg.resultId, 'ok',
+        '✅ 평일 할인 쿠폰이 발급되었습니다!\n'+
+        '당일권 10시간  15,000원 → 10,000원\n\n'+
+        '📍 키오스크 → 신규 → 당일권 → 10시간\n'+
+        '→ 할인액 확인 후 결제\n\n'+
+        '🗓 이번 달 평일 할인은 모두 사용하셨습니다.');
+    } else if (data.monthly_used) {
+      showResult(cfg.resultId, 'dup',
+        '⚠️ 이번 달 평일 할인 쿠폰을\n이미 받으셨습니다.\n다음 달에 다시 신청해 주세요.');
+    } else if (data.cooldown) {
+      showResult(cfg.resultId, 'err',
+        '⏳ 잠시 후 다시 시도해 주세요.\n중복 요청 방지를 위해 일시적으로 제한됩니다.');
+    } else if (data.is_closed_day) {
+      showResult(cfg.resultId, 'err',
+        '🔒 오늘은 휴관일입니다.\n휴관일 할인 쿠폰을 이용해 주세요.');
+    } else if (data.duplicate) {
+      showResult(cfg.resultId, 'dup',
+        '⚠️ 보유 중인 쿠폰이 있습니다.\n현재 쿠폰을 먼저 사용해 주세요.');
+    } else {
+      showResult(cfg.resultId, 'err', '❌ 발급 중 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요.');
+    }
+  } catch(e) {
+    showResult(cfg.resultId, 'err', '❌ 서버에 연결할 수 없습니다.\n잠시 후 다시 시도해 주세요.');
+  } finally {
+    isRequestingMonthly = false;
+    btn.disabled = false;
+    btn.innerHTML = '평일 할인 쿠폰 받기';
+  }
 }
 
 initPage();
